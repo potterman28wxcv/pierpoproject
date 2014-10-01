@@ -67,11 +67,11 @@ char *memory_alloc(int size){
 
 	/* PROBLEME POTENTIEL : SI ON A TOUT PILE LA PLACE */
 	/* New pointer to the beginning of the new free block */
-	new_free = current_free + size + sizeof(busy_block_s);
+	new_free = (free_block_s*) (((char*)current_free) + size + sizeof(busy_block_s));
 	/* Write the new size left in the structure */
    	WRITE_IN_MEMORY(int, new_free, current_free->size - size);
 	/* Write the new next position in the structure */
-   	WRITE_IN_MEMORY(free_block_t, new_free+sizeof(int), current_free->next);
+   	WRITE_IN_MEMORY(free_block_t, ((char*)new_free)+sizeof(int), current_free->next);
 
 	/* Now we have to replace the old free block by a busy one */
 	current_free->size = size;
@@ -84,7 +84,7 @@ char *memory_alloc(int size){
 /* 	print_alloc_info(addr, actual_size); 
  */
 
-	return (char*) current_free+sizeof(busy_block_s);
+	return ((char*) current_free) + sizeof(busy_block_s);
 }
 
 void memory_free(char *p){
