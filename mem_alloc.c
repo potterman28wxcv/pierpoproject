@@ -39,8 +39,12 @@ void memory_init(void){
 char *memory_alloc(int size){
 	/* First Fit */
 
-	free_block_t current;
-	current = first_free;
+	free_block_t current_free;
+	free_block_t previous;
+	free_block_t new_free;
+
+	current_free = first_free;
+	previous = current_free;
 
 	if (!first_free) {
 		printf("first_free does not exist.\n");
@@ -48,23 +52,39 @@ char *memory_alloc(int size){
 	}
 
 	/* Browse through the free_block list */
-	while (current->size < size && current) {
-		current = current->next;
+	while (current_free->size < size && current_free) {
+		previous = current_free;
+		current_free = current_free->next;
 	}
 
 	/* If we went through the whole list, then the memory is full */
-	if (!current) {
+	if (!current_free) {
 		printf("Not enough memory space.\n");
 		exit(EXIT_FAILURE);
 	}
 
 	/* We now allocate the block */
-	/* We need to save space for the block header */
 
+	/* PROBLEME POTENTIEL : SI ON A TOUT PILE LA PLACE */
+	/* New pointer to the beginning of the new free block */
+	new_free = current_free + size + sizeof(busy_block_s);
+	/* Write the new size left in the structure */
+   	WRITE_IN_MEMORY(int, new_free, current_free->size - size);
+	/* Write the new next position in the structure */
+   	WRITE_IN_MEMORY(free_block_t, new_free+sizeof(int), current_free->next);
 
+	/* Now we have to replace the old free block by a busy one */
+	current_free->size = size;
+
+	/* previous -> new_free */
+	/* Works even if we are on first_free */
+	previous->next = new_free;
+
+ 	print_alloc_info((char*) current_free, current_free->size); 
 /* 	print_alloc_info(addr, actual_size); 
  */
-	return NULL;
+
+	return (char*) current_free+sizeof(busy_block_s);
 }
 
 void memory_free(char *p){
