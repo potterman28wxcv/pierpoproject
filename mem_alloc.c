@@ -34,12 +34,16 @@ free_block_t first_free;
 
 void memory_init(void){
    	/* *((int*) memory) = MEMORY_SIZE;*/
-	free_block_s free_block = {MEMORY_SIZE, NULL};
+	free_block_s free_block = {MEMORY_SIZE - sizeof(free_block_s), NULL};
 
 	/*
 	 * The following should be avoided, because
    	WRITE_IN_MEMORY(int, memory, MEMORY_SIZE);
    	WRITE_IN_MEMORY(free_block_t, memory+sizeof(int), 42);
+	*/
+	/*
+	*((int *) memory) = MEMORY_SIZE;
+	*((free_block_t *) memory+sizeof(int)) = 42;
 	*/
 
 	memcpy(memory, &free_block, sizeof(free_block_s));
@@ -103,10 +107,48 @@ char *memory_alloc(int size){
 	return ((char*) current_free) + sizeof(busy_block_s);
 }
 
+/**
+ * Merge the block to the left free neighbour
+ * Else, if there's no left neighbour, it creates a new free block
+ *
+ * Suppose that the free blocks are linked by adress
+ */
 void memory_free(char *p){
+	char ok = 0;
+	char *cursor = memory;
+	free_block_s new;
+	free_block_t cur = first_free;
+	busy_block_t to_be_freed = (busy_block_t) p;
+	
 	print_free_info(p); 
 
-	/* ... */
+	while (cursor + (char *)(cur->size) + \
+			(char *)sizeof(free_block_s) != p){
+		ok = 0;
+		if (cur->next == NULL)
+			break;
+		cursor = (char *)cur->next;
+		cur = cur->next;
+		ok = 1;
+	}
+	if (ok){
+		cur->size += to_be_freed->size + sizeof(busy_block_s);
+		return;
+	}
+
+	/* No neighbour could be found */
+	/* Determining in which index we must insert the new free block */
+	cur = first_free;
+	while ((char *)(cur->next) < p)
+		cur = cur->next;
+
+	/* Then, writing and inserting the new free block */
+	new.size = to_be_freed->size + sizeof(busy_block_s) -\
+		   sizeof(free_block_s);
+	new.next = cur->next;
+	memcpy(p, &new, sizeof(free_block_s));
+	cur->next = (free_block_t) p;
+
 }
 
 
