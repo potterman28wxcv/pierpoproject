@@ -25,15 +25,31 @@ free_block_t first_free;
 #define ULONG(x)((long unsigned int)(x))
 #define max(x,y) (x>y?x:y)
 
+/**
+ * IMPORTANT
+ * This macro MUST be avoided
+ * because sizeof(free_block_s) > sizeof(int) + sizeof(free_block_t)
+ */
 #define WRITE_IN_MEMORY(type, address, value)(*((type*) address) = value)
 
 void memory_init(void){
-   	*((int*) memory) = MEMORY_SIZE;
+   	/* *((int*) memory) = MEMORY_SIZE;*/
+	free_block_s free_block = {MEMORY_SIZE, NULL};
 
+	/*
+	 * The following should be avoided, because
    	WRITE_IN_MEMORY(int, memory, MEMORY_SIZE);
-   	WRITE_IN_MEMORY(free_block_t, memory+sizeof(int), NULL);
+   	WRITE_IN_MEMORY(free_block_t, memory+sizeof(int), 42);
+	*/
+
+	memcpy(memory, &free_block, sizeof(free_block_s));
    
    	first_free = (free_block_t) memory;
+
+	/*
+	printf("TEST MEMORY_INIT : %i %i\n", sizeof(int) + sizeof(free_block_t), sizeof(free_block_s));
+	printf("TEST 2 : %i %i\n", first_free->size, first_free->next);
+	*/
 }
 
 char *memory_alloc(int size){
