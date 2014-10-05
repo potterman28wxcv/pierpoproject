@@ -172,6 +172,8 @@ void memory_free(char *p){
 	cur = first_free;
 	while (cur != NULL){
 		printf("Whiling %i\n", (char *) cur - memory);
+		printf("Just before the if : %i %i\n", (char *)cur - memory,(char *)(to_be_freed + to_be_freed->size + sizeof(busy_block_s)) - memory);
+		printf("sizeof(busy_block_s) : %i, (char *)(sizeof(busy_block_s)) : %i\n", sizeof(busy_block_s), (char *)(sizeof(busy_block_s)));
 		if ((char *)cur == (char *)(to_be_freed + \
 			to_be_freed->size + sizeof(busy_block_s))){
 
