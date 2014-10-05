@@ -140,11 +140,11 @@ void memory_free(char *p){
 	char *cursor = memory;
 	free_block_s new;
 	free_block_t cur = first_free;
-	busy_block_t to_be_freed = (busy_block_t) p - sizeof(busy_block_s);
+	busy_block_t to_be_freed = (busy_block_t) (p - sizeof(busy_block_s));
 	
 	print_free_info(p); 
 	printf("\nStart of memory_free\n");
-	printf("p-memory : %i\n",p-memory);
+	printf("p-memory : %i\n",to_be_freed - (busy_block_t) memory);
 	printf("Block to be freed : size %i\n", to_be_freed->size);
 
 	while ((int)cursor + (int)(cur->size) + \
@@ -164,7 +164,7 @@ void memory_free(char *p){
 	/* No neighbour could be found */
 	/* Determining in which index we must insert the new free block */
 	cur = first_free;
-	while ((char *)(cur->next) < p)
+	while ((char *)(cur->next) < p && cur->next != NULL)
 		cur = cur->next;
 
 	/* Then, writing and inserting the new free block */
@@ -202,8 +202,10 @@ void print_alloc_info(char *addr, int size){
 void print_free_blocks(void) {
 	free_block_t current; 
 	fprintf(stderr, "Begin of free block list :\n"); 
-	for(current = first_free; current != NULL; current = current->next)
+	for(current = first_free; current != NULL; current = current->next) {
+		printf("nique\n");
 		fprintf(stderr, "Free block at address %lu, size %u\n", ULONG((char*)current - memory), current->size);
+	}
 }
 
 char *heap_base(void) {
