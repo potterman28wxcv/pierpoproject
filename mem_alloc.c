@@ -140,7 +140,7 @@ void memory_free(char *p){
 	char *cursor = memory;
 	free_block_s new;
 	free_block_t cur = first_free;
-	busy_block_t to_be_freed = (busy_block_t) p;
+	busy_block_t to_be_freed = (busy_block_t) p - sizeof(busy_block_s);
 	
 	print_free_info(p); 
 	printf("\nStart of memory_free\n");
