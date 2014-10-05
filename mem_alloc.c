@@ -126,6 +126,7 @@ char *memory_alloc(int size){
  */
 
 	printf("Allocating finished at %i\n", ((char*) current_free) + sizeof(busy_block_s) - memory);
+	printf("Now the first_free is %i\n", first_free - (free_block_t)memory);
 	return ((char*) current_free) + sizeof(busy_block_s);
 }
 
@@ -137,9 +138,10 @@ char *memory_alloc(int size){
  */
 void memory_free(char *p){
 	char ok = 0;
-	char *cursor = memory;
+	char *cursor;
 	free_block_s new;
 	free_block_t cur = first_free;
+	free_block_t prev = first_free;
 	busy_block_t to_be_freed = (busy_block_t) (p - sizeof(busy_block_s));
 	
 	print_free_info(p); 
@@ -147,6 +149,8 @@ void memory_free(char *p){
 	printf("p-memory : %i\n",to_be_freed - (busy_block_t) memory);
 	printf("Block to be freed : size %i\n", to_be_freed->size);
 
+	/* Searching for a left neighbour */
+	cursor = memory;
 	while ((int)cursor + (int)(cur->size) + \
 			(int)sizeof(free_block_s) != (int)p){
 		ok = 0;
@@ -159,6 +163,29 @@ void memory_free(char *p){
 	if (ok){
 		cur->size += to_be_freed->size + sizeof(busy_block_s);
 		return;
+	}
+
+	/* Searching for a right neighbour */
+	cur = first_free;
+	while (cur != NULL){
+		printf("Whiling %i\n", cur - (free_block_t) memory);
+		if (cur == to_be_freed + to_be_freed->size +\
+			sizeof(busy_block_s)){
+			new.size = cur->size + to_be_freed->size +\
+				   sizeof(busy_block_s);
+			new.next = cur->next;
+			memcpy(to_be_freed, &new, sizeof(free_block_s));
+			if (prev == first_free){
+				first_free = (free_block_t) to_be_freed;
+				printf("changing first_free : %i\n", \
+					first_free-(free_block_t)memory);
+			}
+			else
+				prev->next = (free_block_t) to_be_freed;
+			return;
+		}
+		prev = cur;
+		cur = cur->next;
 	}
 
 	/* No neighbour could be found */
