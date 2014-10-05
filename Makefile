@@ -1,9 +1,9 @@
-CC=gcc
+CC=colorgcc
 PEDANTIC_PARANOID_FREAK =       -g -O0 -Wall -Wshadow -Wcast-align \
 				-Waggregate-return -Wstrict-prototypes \
 				-Wredundant-decls -Wnested-externs \
 				-Wpointer-arith -Wwrite-strings -finline-functions -Werror
-REASONABLY_CAREFUL_DUDE =	-Wall
+REASONABLY_CAREFUL_DUDE =	-Wall 
 NO_PRAYER_FOR_THE_WICKED =	-w
 WARNINGS = 			$(REASONABLY_CAREFUL_DUDE)
 

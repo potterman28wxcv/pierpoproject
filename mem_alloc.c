@@ -27,35 +27,12 @@ free_block_t first_free;
 #define ULONG(x)((long unsigned int)(x))
 #define max(x,y) (x>y?x:y)
 
-/**
- * IMPORTANT
- * This macro MUST be avoided
- * because sizeof(free_block_s) > sizeof(int) + sizeof(free_block_t)
- */
-#define WRITE_IN_MEMORY(type, address, value)(*((type*) address) = value)
-
 void memory_init(void){
-   	/* *((int*) memory) = MEMORY_SIZE;*/
 	free_block_s free_block = {MEMORY_SIZE, NULL};
-
-	/*
-	 * The following should be avoided, because
-   	WRITE_IN_MEMORY(int, memory, MEMORY_SIZE);
-   	WRITE_IN_MEMORY(free_block_t, memory+sizeof(int), 42);
-	*/
-	/*
-	*((int *) memory) = MEMORY_SIZE;
-	*((free_block_t *) memory+sizeof(int)) = 42;
-	*/
 
 	memcpy(memory, &free_block, sizeof(free_block_s));
    
    	first_free = (free_block_t) memory;
-
-	/*
-	printf("TEST MEMORY_INIT : %i %i\n", sizeof(int) + sizeof(free_block_t), sizeof(free_block_s));
-	printf("TEST 2 : %i %i\n", first_free->size, first_free->next);
-	*/
 }
 
 char *memory_alloc(int size){
@@ -96,13 +73,14 @@ char *memory_alloc(int size){
 	/* New pointer to the beginning of the new free block */
 	new_free = (free_block_s*) (((char*)current_free) + size + sizeof(busy_block_s));
 	/* Write the new size left in the structure */
-   	/*WRITE_IN_MEMORY(int, new_free, current_free->size - size);*/
+	new_free_s.size = current_free->size - size - sizeof(busy_block_s);
 	/* Write the new next position in the structure */
-   	/*WRITE_IN_MEMORY(free_block_t, ((char*)new_free)+sizeof(int), current_free->next);*/
+	new_free_s.next = current_free->next;
+	memcpy(new_free, &new_free_s, sizeof(free_block_s));
+
 #ifdef DEBUG
 	printf("We're allocating in a free block of size %i\n", current_free->size);
 #endif
-	new_free_s.size = current_free->size - size - sizeof(busy_block_s);
 #ifdef DEBUG
 	printf("The next free block should be ");
 #endif
@@ -113,8 +91,6 @@ char *memory_alloc(int size){
 	} else
 		printf("NULL\n");
 #endif
-	new_free_s.next = current_free->next;
-	memcpy(new_free, &new_free_s, sizeof(free_block_s));
 
 	/* Now we have to replace the old free block by a busy one */
 	current_free->size = size + sizeof(busy_block_s);
@@ -134,8 +110,6 @@ char *memory_alloc(int size){
 	}
 
  	print_alloc_info((char*) current_free + sizeof(busy_block_s), current_free->size - sizeof(busy_block_s)); 
-/* 	print_alloc_info(addr, actual_size); 
- */
 
 #ifdef DEBUG
 	printf("Allocating finished at %i\n", ((char*) current_free) + sizeof(busy_block_s) - memory);
@@ -145,15 +119,16 @@ char *memory_alloc(int size){
 }
 
 /**
- * Merge the block to the left free neighbour
- * Else, if there's no left neighbour, it creates a new free block
+ * Merge the block to the left free neighbour, 
+ * or the right free neighbour, or both
+ * Else, if there's no neighbour, it creates a new free block
  *
- * Suppose that the free blocks are linked by address
+ * Assumes that the free blocks are linked by address
  */
 void memory_free(char *p){
 	char ok = 0;
 	char *cursor, *limit;
-        int new_first_free;/* equals 1 if the new free block is a first_free */
+        int new_first_free; /* equals 1 if the new free block is a first_free */
 	free_block_s new;
 	free_block_t left_neighbour = NULL;
 	free_block_t cur = first_free;
@@ -188,6 +163,7 @@ void memory_free(char *p){
 	while (cur != NULL){
 		if ((char *)cur == ((char*)to_be_freed + to_be_freed->size)){
 			if (left_neighbour == NULL){
+				/* No left neighbour */
 				new.size = cur->size + to_be_freed->size;
 				new.next = cur->next;
 				memcpy(to_be_freed, &new, sizeof(free_block_s));
@@ -197,6 +173,7 @@ void memory_free(char *p){
 					prev->next = (free_block_t) to_be_freed;
 				return;
 			} else {
+				/* There's a left neighbour, we merge both */
 				left_neighbour->size += cur->size;
 				left_neighbour->next = cur->next;
 				return;
@@ -206,6 +183,12 @@ void memory_free(char *p){
 		cur = cur->next;
 	}
 
+	/**
+	 * If there was a left neighbour, but no right neighbour
+	 * In either case we have to terminate the function if we have found a
+	 * neighbour ; this case (left neighbour, no right neighbour) is the
+	 * only case not tackled yet 
+	 */
 	if (left_neighbour != NULL)
 		return;
 
@@ -232,6 +215,7 @@ void memory_free(char *p){
 
 	memcpy((char *)to_be_freed, &new, sizeof(free_block_s));
 
+	/* Tackling the case when the new free becomes a first free */
         if (new_first_free == 1)
                 first_free = (free_block_t) to_be_freed;
         else

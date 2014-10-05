@@ -15,9 +15,9 @@ void print_free_blocks(void);
 char *heap_base(void); 
 
 #include <stdlib.h>
-//void *malloc(size_t size); 
-//void free(void *p); 
-//void *realloc(void *ptr, size_t size); 
+void *malloc(size_t size); 
+void free(void *p); 
+void *realloc(void *ptr, size_t size); 
 
 
 #endif 	    /* !_MEM_ALLOC_H_ */

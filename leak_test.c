@@ -4,7 +4,8 @@ int leaking = 1;
 
 void leaking_fun(int n) {
 	void *a,*b,*c;
-	if(n<0) return;
+	if(n<0)
+		return;
 	a = malloc(5);
 	b = malloc(10);
 	leaking_fun(n-1);
@@ -12,7 +13,8 @@ void leaking_fun(int n) {
 	c = malloc(5);
 	leaking_fun(n-2);
 	free(c);
-	if(!leaking || (n%2)==0) free(b);
+	if(!leaking || (n%2)==0)
+		free(b);
 }
 
 int main(int argc, char *argv[]) {
