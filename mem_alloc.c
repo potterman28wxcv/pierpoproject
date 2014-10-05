@@ -133,7 +133,7 @@ char *memory_alloc(int size){
 		previous->next = new_free;
 	}
 
- 	print_alloc_info((char*) current_free, current_free->size); 
+ 	print_alloc_info((char*) current_free + sizeof(busy_block_s), current_free->size); 
 /* 	print_alloc_info(addr, actual_size); 
  */
 
