@@ -93,7 +93,7 @@ char *memory_alloc(int size){
 	/* PROBLEME POTENTIEL : SI ON A TOUT PILE LA PLACE */
 	/* New pointer to the beginning of the new free block */
 	new_free = (free_block_s*) (((char*)current_free) + size + sizeof(busy_block_s));
-	printf("ADDRESS NEW_FREE %x\n",new_free - (free_block_t) memory);
+	printf("ADDRESS NEW_FREE %x\n", (char *)new_free -  memory);
 	/* Write the new size left in the structure */
    	/*WRITE_IN_MEMORY(int, new_free, current_free->size - size);*/
 	/* Write the new next position in the structure */
