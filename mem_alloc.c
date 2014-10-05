@@ -93,7 +93,6 @@ char *memory_alloc(int size){
 	/* PROBLEME POTENTIEL : SI ON A TOUT PILE LA PLACE */
 	/* New pointer to the beginning of the new free block */
 	new_free = (free_block_s*) (((char*)current_free) + size + sizeof(busy_block_s));
-	printf("ADDRESS NEW_FREE %x\n", (char *)new_free -  memory);
 	/* Write the new size left in the structure */
    	/*WRITE_IN_MEMORY(int, new_free, current_free->size - size);*/
 	/* Write the new next position in the structure */
@@ -111,9 +110,6 @@ char *memory_alloc(int size){
 
 	/* Now we have to replace the old free block by a busy one */
 	current_free->size = size;
-
-	bizi_block = (busy_block_t) current_free;
-	printf("Size bizi_block : %i\n",bizi_block->size);
 
 	/* previous -> new_free */
 	/* Works even if we are on first_free */
@@ -150,7 +146,6 @@ void memory_free(char *p){
 	
 	print_free_info(p); 
 	printf("\nStart of memory_free\n");
-	printf("p-memory : %i\n", (char *)to_be_freed - memory);
 	printf("Block to be freed : size %i\n", to_be_freed->size);
 
 	/* Searching for a left neighbour */
@@ -171,10 +166,7 @@ void memory_free(char *p){
 	/* Searching for a right neighbour */
 	cur = first_free;
 	while (cur != NULL){
-		printf("Whiling %i\n", (char *) cur - memory);
-		printf("Just before the if : %i %i\n", (char *)cur - memory,(char *)(to_be_freed + to_be_freed->size + sizeof(busy_block_s)) - memory);
-		printf("sizeof(busy_block_s) : %i, (char *)(sizeof(busy_block_s)) : %i\n", sizeof(busy_block_s), (char *)(sizeof(busy_block_s)));
-		if ((char *)cur == (char *)(to_be_freed + \
+		if ((char *)cur == ((char*)to_be_freed + \
 			to_be_freed->size + sizeof(busy_block_s))){
 
 			new.size = cur->size + to_be_freed->size +\
@@ -233,7 +225,6 @@ void print_free_blocks(void) {
 	free_block_t current; 
 	fprintf(stderr, "Begin of free block list :\n"); 
 	for(current = first_free; current != NULL; current = current->next) {
-		printf("nique\n");
 		fprintf(stderr, "Free block at address %lu, size %u\n", ULONG((char*)current - memory), current->size);
 	}
 }
