@@ -62,9 +62,12 @@ char *memory_alloc(int size){
 	free_block_t current_free;
 	free_block_t previous;
 	free_block_t new_free;
+	free_block_s new_free_s;
 
 	current_free = first_free;
 	previous = current_free;
+
+	printf("\nStarting to allocate %i bytes\n", size);
 
 	if (!first_free) {
 		printf("first_free does not exist.\n");
@@ -89,9 +92,18 @@ char *memory_alloc(int size){
 	/* New pointer to the beginning of the new free block */
 	new_free = (free_block_s*) (((char*)current_free) + size + sizeof(busy_block_s));
 	/* Write the new size left in the structure */
-   	WRITE_IN_MEMORY(int, new_free, current_free->size - size);
+   	/*WRITE_IN_MEMORY(int, new_free, current_free->size - size);*/
 	/* Write the new next position in the structure */
-   	WRITE_IN_MEMORY(free_block_t, ((char*)new_free)+sizeof(int), current_free->next);
+   	/*WRITE_IN_MEMORY(free_block_t, ((char*)new_free)+sizeof(int), current_free->next);*/
+	printf("We're allocating in a free block of size %i\n", current_free->size);
+	new_free_s.size = current_free->size - size;
+	printf("The next free block should be ");
+	if (current_free->next != NULL)
+		printf("%i\n", (char *)current_free->next - memory);
+	else
+		printf("NULL\n");
+	new_free_s.next = current_free->next;
+	memcpy(new_free, &new_free_s, sizeof(free_block_s));
 
 	/* Now we have to replace the old free block by a busy one */
 	current_free->size = size;
@@ -104,6 +116,7 @@ char *memory_alloc(int size){
 /* 	print_alloc_info(addr, actual_size); 
  */
 
+	printf("Allocating finished at %i\n", ((char*) current_free) + sizeof(busy_block_s) - memory);
 	return ((char*) current_free) + sizeof(busy_block_s);
 }
 
@@ -121,6 +134,8 @@ void memory_free(char *p){
 	busy_block_t to_be_freed = (busy_block_t) p;
 	
 	print_free_info(p); 
+	printf("\nStart of memory_free\n");
+	printf("Block to be freed : size %i\n", to_be_freed->size);
 
 	while ((int)cursor + (int)(cur->size) + \
 			(int)sizeof(free_block_s) != (int)p){
@@ -148,7 +163,7 @@ void memory_free(char *p){
 	new.next = cur->next;
 	memcpy(p, &new, sizeof(free_block_s));
 	cur->next = (free_block_t) p;
-
+	printf("End of memory_free !\n");
 }
 
 
