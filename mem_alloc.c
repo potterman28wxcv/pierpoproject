@@ -122,8 +122,8 @@ void memory_free(char *p){
 	
 	print_free_info(p); 
 
-	while (cursor + (char *)(cur->size) + \
-			(char *)sizeof(free_block_s) != p){
+	while ((int)cursor + (int)(cur->size) + \
+			(int)sizeof(free_block_s) != (int)p){
 		ok = 0;
 		if (cur->next == NULL)
 			break;
