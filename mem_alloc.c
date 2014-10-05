@@ -64,24 +64,26 @@ char *memory_alloc(int size){
 	free_block_t new_free;
 	free_block_s new_free_s;
 
+	busy_block_t bizi_block;
+
 	current_free = first_free;
-	previous = current_free;
+	previous = first_free;
 
 	printf("\nStarting to allocate %i bytes\n", size);
 
-	if (!first_free) {
+	if (first_free == NULL) {
 		printf("first_free does not exist.\n");
 		exit(EXIT_FAILURE);
 	}
 
 	/* Browse through the free_block list */
-	while (current_free->size < size && current_free) {
+	while (current_free->size < size && current_free != NULL) {
 		previous = current_free;
 		current_free = current_free->next;
 	}
 
 	/* If we went through the whole list, then the memory is full */
-	if (!current_free) {
+	if (current_free == NULL) {
 		printf("Not enough memory space.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -96,11 +98,12 @@ char *memory_alloc(int size){
 	/* Write the new next position in the structure */
    	/*WRITE_IN_MEMORY(free_block_t, ((char*)new_free)+sizeof(int), current_free->next);*/
 	printf("We're allocating in a free block of size %i\n", current_free->size);
-	new_free_s.size = current_free->size - size;
+	new_free_s.size = current_free->size - size - sizeof(busy_block_s);
 	printf("The next free block should be ");
-	if (current_free->next != NULL)
+	if (current_free->next != NULL) {
 		printf("%i\n", (char *)current_free->next - memory);
-	else
+		printf("current_free->next : %i\n",current_free->next);
+	} else
 		printf("NULL\n");
 	new_free_s.next = current_free->next;
 	memcpy(new_free, &new_free_s, sizeof(free_block_s));
@@ -108,9 +111,15 @@ char *memory_alloc(int size){
 	/* Now we have to replace the old free block by a busy one */
 	current_free->size = size;
 
+	bizi_block = (busy_block_t) current_free;
+	printf("Size bizi_block : %i\n",bizi_block->size);
+
 	/* previous -> new_free */
 	/* Works even if we are on first_free */
-	previous->next = new_free;
+	if (previous == first_free)
+		first_free = new_free;
+	else 
+		previous->next = new_free;
 
  	print_alloc_info((char*) current_free, current_free->size); 
 /* 	print_alloc_info(addr, actual_size); 
@@ -124,7 +133,7 @@ char *memory_alloc(int size){
  * Merge the block to the left free neighbour
  * Else, if there's no left neighbour, it creates a new free block
  *
- * Suppose that the free blocks are linked by adress
+ * Suppose that the free blocks are linked by address
  */
 void memory_free(char *p){
 	char ok = 0;
@@ -135,6 +144,7 @@ void memory_free(char *p){
 	
 	print_free_info(p); 
 	printf("\nStart of memory_free\n");
+	printf("p-memory : %i\n",p-memory);
 	printf("Block to be freed : size %i\n", to_be_freed->size);
 
 	while ((int)cursor + (int)(cur->size) + \
