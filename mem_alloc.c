@@ -93,6 +93,7 @@ char *memory_alloc(int size){
 	/* PROBLEME POTENTIEL : SI ON A TOUT PILE LA PLACE */
 	/* New pointer to the beginning of the new free block */
 	new_free = (free_block_s*) (((char*)current_free) + size + sizeof(busy_block_s));
+	printf("ADDRESS NEW_FREE %x\n",new_free - (free_block_t) memory);
 	/* Write the new size left in the structure */
    	/*WRITE_IN_MEMORY(int, new_free, current_free->size - size);*/
 	/* Write the new next position in the structure */
@@ -101,8 +102,8 @@ char *memory_alloc(int size){
 	new_free_s.size = current_free->size - size - sizeof(busy_block_s);
 	printf("The next free block should be ");
 	if (current_free->next != NULL) {
-		printf("%i\n", (char *)current_free->next - memory);
-		printf("current_free->next : %i\n",current_free->next);
+		printf("%x\n", (char *)current_free->next - memory);
+		printf("current_free->next : %x\n",current_free->next);
 	} else
 		printf("NULL\n");
 	new_free_s.next = current_free->next;
@@ -116,17 +117,20 @@ char *memory_alloc(int size){
 
 	/* previous -> new_free */
 	/* Works even if we are on first_free */
-	if (previous == first_free)
+	if (previous == first_free) {
+		printf("First_free = new_free\n");
 		first_free = new_free;
-	else 
+	} else {
+		printf("Previous->next = new_free\n");
 		previous->next = new_free;
+	}
 
  	print_alloc_info((char*) current_free, current_free->size); 
 /* 	print_alloc_info(addr, actual_size); 
  */
 
 	printf("Allocating finished at %i\n", ((char*) current_free) + sizeof(busy_block_s) - memory);
-	printf("Now the first_free is %i\n", first_free - (free_block_t)memory);
+	printf("Now the first_free is %i\n", (char*)first_free - memory);
 	return ((char*) current_free) + sizeof(busy_block_s);
 }
 
