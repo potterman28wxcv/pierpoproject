@@ -4,6 +4,7 @@
 #include <string.h>
 
 /* #define DEBUG */
+/* #define __CHECK_FREE__ */
 
 /* memory */
 char memory[MEMORY_SIZE]; 
@@ -27,12 +28,35 @@ free_block_t first_free;
 #define ULONG(x)((long unsigned int)(x))
 #define max(x,y) (x>y?x:y)
 
+#ifdef __CHECK_FREE__
+static void check_for_unfreed(void)
+{
+	free_block_t cur = first_free;
+	int free_memory = 0;
+
+	if (cur->size != MEMORY_SIZE){
+		fprintf(stderr, "WARNING : some blocks are not freed !\n");
+		while (cur != NULL){
+			free_memory += cur->size;
+			cur = cur->next;
+		}
+		fprintf(stderr, "%lu bytes haven't been freed\n", \
+				(long unsigned int)(MEMORY_SIZE - free_memory));
+	}
+
+}
+#endif
+
 void memory_init(void){
 	free_block_s free_block = {MEMORY_SIZE, NULL};
 
 	memcpy(memory, &free_block, sizeof(free_block_s));
    
    	first_free = (free_block_t) memory;
+
+#ifdef __CHECK_FREE__
+	atexit(&check_for_unfreed);
+#endif
 }
 
 char *memory_alloc(int size){
@@ -224,7 +248,6 @@ void memory_free(char *p){
 	printf("End of memory_free !\n");
 #endif
 }
-
 
 void print_info(void) {
 	fprintf(stderr, "Memory : [%lu %lu] (%lu bytes)\n", (long unsigned int) 0, (long unsigned int) (memory+MEMORY_SIZE), (long unsigned int) (MEMORY_SIZE));
