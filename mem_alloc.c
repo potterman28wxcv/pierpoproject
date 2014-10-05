@@ -172,7 +172,7 @@ void memory_free(char *p){
 	cur = first_free;
 	while (cur != NULL){
 		printf("Whiling %i\n", (char *) cur - memory);
-		if ((char *)cur == (char *)(to_be_freed + \
+		if ((char *)cur == ((char*)to_be_freed + \
 			to_be_freed->size + sizeof(busy_block_s))){
 
 			new.size = cur->size + to_be_freed->size +\
@@ -231,7 +231,6 @@ void print_free_blocks(void) {
 	free_block_t current; 
 	fprintf(stderr, "Begin of free block list :\n"); 
 	for(current = first_free; current != NULL; current = current->next) {
-		printf("nique\n");
 		fprintf(stderr, "Free block at address %lu, size %u\n", ULONG((char*)current - memory), current->size);
 	}
 }
