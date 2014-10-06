@@ -153,6 +153,7 @@ char *memory_alloc(int size){
 void memory_free(char *p){
 	char ok = 0;
 	char *cursor, *limit;
+        int new_first_free;/* equals 1 if the new free block is a first_free */
 	free_block_s new;
 	free_block_t cur = first_free;
 	free_block_t prev = first_free;
@@ -200,17 +201,33 @@ void memory_free(char *p){
 	}
 
 	/* No neighbour could be found */
-	/* Determining in which index we must insert the new free block */
 	cur = first_free;
-	while ((char *)(cur->next) < p && cur->next != NULL)
-		cur = cur->next;
+
+        /* If the block to be freed is before first_free, it becomes
+         * first_free */
+        new_first_free = ((char *)cur > p);
+
+	/* Determining where we must insert the new free block 
+         * in the linked list */
+        if (new_first_free == 0)
+                while ((char *)(cur->next) < p && cur->next != NULL)
+                        cur = cur->next;
 
 	/* Then, writing and inserting the new free block */
 	new.size = to_be_freed->size + sizeof(busy_block_s) -\
 		   sizeof(free_block_s);
-	new.next = cur->next;
+
+        if (new_first_free == 1)
+                new.next = cur;
+        else
+                new.next = cur->next;
+
 	memcpy(p, &new, sizeof(free_block_s));
-	cur->next = (free_block_t) p;
+
+        if (new_first_free == 1)
+                first_free = (free_block_t) p;
+        else
+                cur->next = (free_block_t) p;
 #ifdef DEBUG
 	printf("End of memory_free !\n");
 #endif
