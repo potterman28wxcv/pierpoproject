@@ -36,7 +36,7 @@ free_block_t first_free;
 
 void memory_init(void){
    	/* *((int*) memory) = MEMORY_SIZE;*/
-	free_block_s free_block = {MEMORY_SIZE - sizeof(free_block_s), NULL};
+	free_block_s free_block = {MEMORY_SIZE, NULL};
 
 	/*
 	 * The following should be avoided, because
@@ -79,7 +79,7 @@ char *memory_alloc(int size){
 	}
 
 	/* Browse through the free_block list */
-	while (current_free->size < size && current_free != NULL) {
+	while (current_free->size < size + sizeof(busy_block_s) && current_free != NULL) {
 		previous = current_free;
 		current_free = current_free->next;
 	}
@@ -117,7 +117,7 @@ char *memory_alloc(int size){
 	memcpy(new_free, &new_free_s, sizeof(free_block_s));
 
 	/* Now we have to replace the old free block by a busy one */
-	current_free->size = size;
+	current_free->size = size + sizeof(busy_block_s);
 
 	/* previous -> new_free */
 	/* Works even if we are on first_free */
@@ -133,7 +133,7 @@ char *memory_alloc(int size){
 		previous->next = new_free;
 	}
 
- 	print_alloc_info((char*) current_free + sizeof(busy_block_s), current_free->size); 
+ 	print_alloc_info((char*) current_free + sizeof(busy_block_s), current_free->size - sizeof(busy_block_s)); 
 /* 	print_alloc_info(addr, actual_size); 
  */
 
@@ -155,19 +155,22 @@ void memory_free(char *p){
 	char *cursor, *limit;
         int new_first_free;/* equals 1 if the new free block is a first_free */
 	free_block_s new;
+	free_block_t left_neighbour = NULL;
 	free_block_t cur = first_free;
 	free_block_t prev = first_free;
 	busy_block_t to_be_freed = (char *) (p - sizeof(busy_block_s));
 	
-	print_free_info(p); 
+	print_free_info(p);
 #ifdef DEBUG
 	printf("\nStart of memory_free\n");
 	printf("Block to be freed : size %i\n", to_be_freed->size);
 #endif
 
 	/* Searching for a left neighbour */
-	cursor = memory;
-	while (cursor + cur->size + sizeof(free_block_s) != p){
+	cursor = (char *)first_free;
+	if (cursor + cur->size == (char *) to_be_freed)
+		ok = 1;
+	while (cursor + cur->size != (char *)to_be_freed){
 		ok = 0;
 		if (cur->next == NULL)
 			break;
@@ -176,34 +179,40 @@ void memory_free(char *p){
 		ok = 1;
 	}
 	if (ok){
-		cur->size += to_be_freed->size + sizeof(busy_block_s);
-		return;
+		cur->size += to_be_freed->size;
+		left_neighbour = cur;
 	}
 
 	/* Searching for a right neighbour */
 	cur = first_free;
 	while (cur != NULL){
-		if ((char *)cur == ((char*)to_be_freed + \
-			to_be_freed->size + sizeof(busy_block_s))){
-
-			new.size = cur->size + to_be_freed->size +\
-				   sizeof(busy_block_s);
-			new.next = cur->next;
-			memcpy(to_be_freed, &new, sizeof(free_block_s));
-			if (prev == first_free)
-				first_free = (free_block_t) to_be_freed;
-			else
-				prev->next = (free_block_t) to_be_freed;
-			return;
+		if ((char *)cur == ((char*)to_be_freed + to_be_freed->size)){
+			if (left_neighbour == NULL){
+				new.size = cur->size + to_be_freed->size;
+				new.next = cur->next;
+				memcpy(to_be_freed, &new, sizeof(free_block_s));
+				if (prev == first_free)
+					first_free = (free_block_t) to_be_freed;
+				else
+					prev->next = (free_block_t) to_be_freed;
+				return;
+			} else {
+				left_neighbour->size += cur->size;
+				left_neighbour->next = cur->next;
+				return;
+			}
 		}
 		prev = cur;
 		cur = cur->next;
 	}
 
+	if (left_neighbour != NULL)
+		return;
+
 	/* No neighbour could be found */
 	cur = first_free;
 
-        /* If the block to be freed is before first_free, it becomes
+        /* If the block to be freed is before first_free, it will become
          * first_free */
         new_first_free = ((char *)cur > p);
 
@@ -214,20 +223,19 @@ void memory_free(char *p){
                         cur = cur->next;
 
 	/* Then, writing and inserting the new free block */
-	new.size = to_be_freed->size + sizeof(busy_block_s) -\
-		   sizeof(free_block_s);
+	new.size = to_be_freed->size;
 
         if (new_first_free == 1)
                 new.next = cur;
         else
                 new.next = cur->next;
 
-	memcpy(p, &new, sizeof(free_block_s));
+	memcpy((char *)to_be_freed, &new, sizeof(free_block_s));
 
         if (new_first_free == 1)
-                first_free = (free_block_t) p;
+                first_free = (free_block_t) to_be_freed;
         else
-                cur->next = (free_block_t) p;
+                cur->next = (free_block_t) to_be_freed;
 #ifdef DEBUG
 	printf("End of memory_free !\n");
 #endif
