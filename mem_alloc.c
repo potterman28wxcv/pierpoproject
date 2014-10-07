@@ -6,7 +6,7 @@
 //#define BEST_FIT
 /* #define DEBUG */
 /* #define __CHECK_END__ */
-#define BEST_FIT
+#define WORST_FIT
 
 /* memory */
 char memory[MEMORY_SIZE]; 
@@ -28,8 +28,6 @@ free_block_t first_free;
 
 
 #define ULONG(x)((long unsigned int)(x))
-#define max(x,y) (x>y?x:y)
-#define min(x,y) (x<y?x:y)
 
 #ifdef __CHECK_END__
 static void check_for_unfreed(void)
@@ -193,6 +191,87 @@ char *memory_alloc(int size){
 	return ((char*) best_block) + sizeof(busy_block_s);
 }
 #endif
+
+
+
+
+
+
+
+
+
+/***** WORST FIT *****/
+#ifdef WORST_FIT 
+char *memory_alloc(int size){
+	int max_remaining_size = -1;
+	free_block_t best_block = NULL;
+	free_block_t best_previous = NULL;
+
+	free_block_t current_free;
+	free_block_t previous;
+	free_block_t new_free;
+	free_block_s new_free_s;
+
+	current_free = first_free;
+	previous = first_free;
+
+	if (first_free == NULL) {
+		printf("first_free does not exist.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* Browse through the free_block list */
+	while (current_free != NULL) {
+		previous = current_free;
+		if (current_free->size > size + sizeof(busy_block_s)) {
+			/* Not sure about the condition */
+			if (max_remaining_size == -1 || (current_free->size - size - sizeof(busy_block_s) > max_remaining_size)) {
+				best_block = current_free;
+				max_remaining_size = current_free->size - size - sizeof(busy_block_s) ;
+				printf("New max_remaining_size : %i\n",max_remaining_size);
+				best_previous = previous;
+			}
+		}
+		current_free = current_free->next;
+	}
+
+	/* If we went through the whole list and didn't find a match, then the memory is full */
+	if (max_remaining_size == -1) {
+		printf("Not enough memory space.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* We now allocate the block */
+
+	/* New pointer to the beginning of the new free block */
+	new_free = (free_block_s*) (((char*)best_block) + size + sizeof(busy_block_s));
+	/* Write the new size left in the structure */
+	new_free_s.size = best_block->size - size - sizeof(busy_block_s);
+	/* Write the new next position in the structure */
+	new_free_s.next = best_block->next;
+	memcpy(new_free, &new_free_s, sizeof(free_block_s));
+
+	/* Now we have to replace the old free block by a busy one */
+	best_block->size = size + sizeof(busy_block_s);
+
+	/* previous -> new_free */
+	/* Works even if we are on first_free */
+	if (best_previous == first_free) {
+		first_free = new_free;
+	} else {
+		best_previous->next = new_free;
+	}
+
+ 	print_alloc_info((char*) best_block + sizeof(busy_block_s), best_block->size - sizeof(busy_block_s)); 
+
+	return ((char*) best_block) + sizeof(busy_block_s);
+}
+#endif
+
+
+
+
+
 
 
 
@@ -410,36 +489,37 @@ void leaking_fun(int n) {
 int main(int argc, char **argv){
 
 	/* The main can be changed, it is *not* involved in tests */
-/* 	memory_init();
- * 	print_info(); 
- * 	print_free_blocks();
- * 	int i ; 
- * 	for( i = 0; i < 10; i++){
- * 		char *b = memory_alloc(rand()%8);
- * 		memory_free(b); 
- * 		print_free_blocks();
- * 	}
- * 
- * 
- * 
- * 
- * 	char * a = memory_alloc(15);
- * 	a=realloc(a, 20); 
- * 	memory_free(a);
- * 
- * 
- * 	a = memory_alloc(10);
- * 	memory_free(a);
- * 
- * 	printf("%lu\n",(long unsigned int) (memory_alloc(9)));
- * 	return EXIT_SUCCESS;
- */
+	memory_init();
+	print_info(); 
+	print_free_blocks();
+	int i ; 
+	for( i = 0; i < 10; i++){
+		char *b = memory_alloc(rand()%8);
+		memory_free(b); 
+		print_free_blocks();
+	}
 
-	if(argc>1) 
-		leaking = 0;
-	else 
-		leaking = 1;
-	leaking_fun(6);
-	return 0;
+
+
+
+	char * a = memory_alloc(15);
+	a=realloc(a, 20); 
+	memory_free(a);
+
+
+	a = memory_alloc(10);
+	memory_free(a);
+
+	printf("%lu\n",(long unsigned int) (memory_alloc(9)));
+	return EXIT_SUCCESS;
+
+
+/* 	if(argc>1) 
+ * 		leaking = 0;
+ * 	else 
+ * 		leaking = 1;
+ * 	leaking_fun(6);
+ * 	return 0;
+ */
 }
 #endif 

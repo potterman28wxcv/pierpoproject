@@ -17,17 +17,18 @@ C_FILES = $(wildcard *.c)
 BIN_FILES = $(patsubst %.c,%,$(C_FILES))
 O_FILES = $(patsubst %.c,%.o,$(C_FILES))
 
-test_end_checking:test_end_checking.c mem_alloc.c
-	$(CC) -DMEMORY_SIZE=2048 -D__CHECK_END__ $(CFLAGS) $(LDFLAGS) $^ -o $@
-
-test_free_checking:test_free_checking.c mem_alloc.c
-	$(CC) -DMEMORY_SIZE=2048 $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 mem_alloc_test:mem_alloc.c
 	$(CC) -DMAIN -DMEMORY_SIZE=2048 $(CFLAGS) $(LDFLAGS) $< -o $@
 
 mem_shell:mem_shell.c mem_alloc.c
 	$(CC) -DMEMORY_SIZE=512 $(CFLAGS) $(LDFLAGS) $^ -o $@
+
+test_end_checking:test_end_checking.c mem_alloc.c
+	$(CC) -DMEMORY_SIZE=2048 -D__CHECK_END__ $(CFLAGS) $(LDFLAGS) $^ -o $@
+
+test_free_checking:test_free_checking.c mem_alloc.c
+	$(CC) -DMEMORY_SIZE=2048 $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 libmalloc.o:mem_alloc.c
 #	$(CC) -DMEMORY_SIZE=8388608 $(CFLAGS) -fPIC -c $< -o $@
