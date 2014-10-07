@@ -69,11 +69,11 @@ project.
 |   In each size, we count the size of the entire block 
 |   (so header + usable size)
 
--> adresses :
+-> addresses :
 |   In the case of pointer to free blocks, we consider the beginning
 |   of the block.
 |
-|   But, for the user interface, we return the adress that is directly usable.
+|   But, for the user interface, we return the address that is directly usable.
 |   (and not the one of the header)
 
 -> structures :

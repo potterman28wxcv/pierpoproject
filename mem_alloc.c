@@ -150,7 +150,6 @@ char *memory_alloc(int size){
 			if (min_remaining_size == -1 || (current_free->size - size - sizeof(busy_block_s) < min_remaining_size)) {
 				best_block = current_free;
 				min_remaining_size = current_free->size - size - sizeof(busy_block_s) ;
-				printf("New min_remaining_size : %i\n",min_remaining_size);
 				best_previous = previous;
 			}
 		}
@@ -226,7 +225,6 @@ char *memory_alloc(int size){
 			if (max_remaining_size == -1 || (current_free->size - size - sizeof(busy_block_s) > max_remaining_size)) {
 				best_block = current_free;
 				max_remaining_size = current_free->size - size - sizeof(busy_block_s) ;
-				printf("New max_remaining_size : %i\n",max_remaining_size);
 				best_previous = previous;
 			}
 		}
