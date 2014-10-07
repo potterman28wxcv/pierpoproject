@@ -2,12 +2,14 @@
 
 int main(void)
 {
-	long *a, *b;
+	char *a, *b;
 
 	memory_init();
-	a = (long *) memory_alloc(sizeof(long));
-	b = (long *) memory_alloc(sizeof(long));
-	memory_free((char *) a);
+
+	a = memory_alloc(sizeof(char));
+	b = memory_alloc(sizeof(char));
+	memory_free(b);
+	memory_free(b);
 
 	return 0;
 }

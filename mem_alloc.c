@@ -3,10 +3,12 @@
 #include <assert.h>
 #include <string.h>
 
-#define BEST_FIT 
+/*#define BEST_FIT */
 
-#define DEBUG
+/* #define DEBUG */
 /* #define __CHECK_FREE__ */
+/* #define __CHECK_END__ */
+/* #define FIRST_FIT */
 
 /* memory */
 char memory[MEMORY_SIZE]; 
@@ -31,7 +33,7 @@ free_block_t first_free;
 #define max(x,y) (x>y?x:y)
 #define min(x,y) (x<y?x:y)
 
-#ifdef __CHECK_FREE__
+#ifdef __CHECK_END__
 static void check_for_unfreed(void)
 {
 	free_block_t cur = first_free;
@@ -57,7 +59,7 @@ void memory_init(void){
    
    	first_free = (free_block_t) memory;
 
-#ifdef __CHECK_FREE__
+#ifdef __CHECK_END__
 	atexit(&check_for_unfreed);
 #endif
 }
@@ -157,7 +159,6 @@ char *memory_alloc(int size){
 /***** BEST FIT *****/
 #ifdef BEST_FIT
 char *memory_alloc(int size){
-
 	int min_remaining_size = -1;
 	free_block_t best_block = NULL;
 	free_block_t best_previous = NULL;
@@ -241,12 +242,13 @@ char *memory_alloc(int size){
  */
 void memory_free(char *p){
 	char ok = 0;
-	char *cursor, *limit;
+	char *cursor;
         int new_first_free; /* equals 1 if the new free block is a first_free */
 	free_block_s new;
 	free_block_t left_neighbour = NULL;
 	free_block_t cur = first_free;
 	free_block_t prev = first_free;
+	busy_block_t cur_busy;
 	busy_block_t to_be_freed = (char *) (p - sizeof(busy_block_s));
 	
 	print_free_info(p);
@@ -255,7 +257,28 @@ void memory_free(char *p){
 	printf("Block to be freed : size %i\n", to_be_freed->size);
 #endif
 
+	/* Determining if the to_be_freed block is busy */
+	cur = first_free;
+	cursor = memory;
+	while (cursor < (char *) to_be_freed){
+		if (cursor == (char *)cur){
+			/* cursor is on a free block */
+			cursor += cur->size;
+			cur = cur->next;
+		} else {
+			/* cursor is on a busy block */
+			cur_busy = (busy_block_t) cursor;
+			cursor += cur_busy->size;
+		}
+	}
+	if (!(cursor == (char *) to_be_freed && cursor != (char *) cur)){
+		fprintf(stderr, "You're trying to free an invalid adress\n");
+		exit(EXIT_FAILURE);
+	}
+		
+
 	/* Searching for a left neighbour */
+	cur = first_free;
 	cursor = (char *)first_free;
 	if (cursor + cur->size == (char *) to_be_freed)
 		ok = 1;
