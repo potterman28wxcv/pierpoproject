@@ -1,3 +1,69 @@
+/* Question III.1 */
+Knowing the list of free block, and having the size stored in each block,
+we have precise knowledge of where are the busy block.
+
+Indeed : if the block isn't stored in the free block list, then it's a busy
+block. Also, if there are several busy blocks next to each other, with their
+size, we can jump from one to the next one.
+
+So to know the list of busy block, what we have to do is start from the
+beginning of the memory, and jump to the next block using the size attribute :
+*) if the block is in the free list, then it's a free block
+*) if it's not the case, then it's a busy block
+
+In mem_alloc.c, we use this technique to know if the free request of a user
+is correct.
+
+/* Question III.2 */
+As a user, we cannot use adresses that haven't been allocated first. Indeed,
+the allocator has to store headers in each allocated block ; if the user were
+able to write wherever he wants, it would then screw up the allocator, which
+would lead to weird behaviours (seg fault, infinite loop..).
+
+So it's more secured to forbide the user to do it.
+
+/* Question III.3 */
+Therefore, when a block is allocated, we should return the adress that is
+actually usable by the user. For example, if the user allocates 20 bytes, then
+the allocator turn a 24 bytes block into a busy block, and it returns the
+adress of the 5th bytes (assuming the header is 4 bytes long).
+
+/* Question III.4 */
+So the user always use the adress of the usable content, not the adress of
+the header. As a consequence, the free function will always have the adress
+of usable content as argument ; the first step is then to jump back of 4
+bytes for example if the header is 4 bytes.
+
+We have to take care to keep consistency of the linked list ; so link the
+previous free block to this new one for example.
+
+/* Question III.5 */
+If there exists a free block neighbour, instead of creating a new free
+block, we can "expand" the neighbour ! So the problem occurs only when there's
+no free neighbour, so when the 2 neighbours are busy block.
+
+If we freed this block, as the header is too large (rest too small), it would
+write to the adjacent block and corrupt the header of the neighbour. Which
+would result in undefinite behaviour.
+
+If we didn't free the block and did nothing, then this part of the memory would
+become unusable in the future (also, it would break the assumption that every
+block is either a free block or a busy block ; and we need this assumption to
+make the "free checking" work).
+
+That's why we chose the following : instead of freeing the block or not doing
+anything at all, we merge the busy block to the left neighbour busy block.
+
+The pro : it solves our problem !
+
+The con : the user can use this extra memory without knowing it. For example
+he could declare an array of 20 elements, go to the 21 elements, and the
+program wouldn't crash, while it would do unexpected behaviour.
+
+Here, as we don't have any checking occuring when trying to access memory,
+this is not a problem. But it would be a problem in a more consequent OS 
+project.
+
 /* CONVENTIONS */
 -> size :
 |   In each size, we count the size of the entire block 
@@ -19,15 +85,6 @@
 -> No free block neighbour : 
 |   If the size of the block isn't big enough to
 |   create a free block, we merge this one to the previous busy block.
-|
-|   The pro is that we're not losing any memory that would become unusable.
-|
-|   And in this case, as we have no way to tell when the user tries to 
-|   read/write in an non allocated space, it's not causing any problem.
-|
-|   But, if we had a such system, then it wouldn't be wise to do it (because
-|   then that would mean we would allow in some particular cases the user to
-|   write in "extra" memory that is not allocated to him).
 
 -> A left neighbour, or a right neighbour :
 |   We merge the new free block to its neighbour
@@ -55,3 +112,4 @@ enough to contain a busy block + the requested size.
 |   there are free instructions in them, because the adress to be freed has
 |   to be written in the free instruction in the .in file ; and the adress to
 |   be freed vary depending on what fit you choose..)
+

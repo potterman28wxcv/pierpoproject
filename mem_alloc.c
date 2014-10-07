@@ -6,7 +6,8 @@
 //#define BEST_FIT
 /* #define DEBUG */
 /* #define __CHECK_END__ */
-#define WORST_FIT
+//#define WORST_FIT
+#define FIRST_FIT
 
 /* memory */
 char memory[MEMORY_SIZE]; 
@@ -313,7 +314,10 @@ void memory_free(char *p){
 		}
 	}
 	if (!(cursor == (char *) to_be_freed && cursor != (char *) cur)){
-		fprintf(stderr, "You're trying to free an invalid adress\n");
+		if (cursor != (char *) to_be_freed)
+			fprintf(stderr, "You're trying to free an invalid adress\n");
+		else if (cursor == (char *) cur)
+			fprintf(stderr, "The adress is already freed !\n");
 		exit(EXIT_FAILURE);
 	}
 		
@@ -372,6 +376,32 @@ void memory_free(char *p){
 
 	/* No neighbour could be found */
 	cur = first_free;
+
+	/**
+	 * If there isn't enough space to put a free block, we merge it to the
+	 * left neighbour (which is a busy block, because no free neighbour
+	 * were found !) 
+	 *
+	 * For this algorithm, we consider that everytime the cursor is on
+	 * a free block. As the free block and the busy block share the size
+	 * attribute in their structure (stored at the same relative location
+	 * in the memory), it works in this particular case.
+	 *
+	 * This would have to be changed if we decided to change one of the
+	 * structures 
+	 */
+	if (to_be_freed->size < sizeof(free_block_s)){
+		cursor = memory;
+		cur = (free_block_t) cursor;
+		while (cursor + cur->size != (char *) to_be_freed){
+			cursor += cur->size;
+			cur = (free_block_t) cursor;
+		}
+
+		/* cursor and cur are placed on the left neighbour (busy) */
+		cur->size += to_be_freed->size;
+		return;
+	}
 
         /* If the block to be freed is before first_free, it will become
          * first_free */
@@ -489,7 +519,7 @@ void leaking_fun(int n) {
 int main(int argc, char **argv){
 
 	/* The main can be changed, it is *not* involved in tests */
-	memory_init();
+	/*memory_init();
 	print_info(); 
 	print_free_blocks();
 	int i ; 
@@ -511,15 +541,15 @@ int main(int argc, char **argv){
 	memory_free(a);
 
 	printf("%lu\n",(long unsigned int) (memory_alloc(9)));
-	return EXIT_SUCCESS;
+	return EXIT_SUCCESS;*/
 
 
-/* 	if(argc>1) 
- * 		leaking = 0;
- * 	else 
- * 		leaking = 1;
- * 	leaking_fun(6);
- * 	return 0;
- */
+	if(argc>1) 
+		leaking = 0;
+	else 
+		leaking = 1;
+	leaking_fun(6);
+	return 0;
+
 }
 #endif 
