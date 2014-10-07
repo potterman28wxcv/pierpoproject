@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <string.h>
 
-/* #define BEST_FIT */
+//#define BEST_FIT
 /* #define DEBUG */
 /* #define __CHECK_END__ */
 #define FIRST_FIT
@@ -89,7 +89,7 @@ char *memory_alloc(int size){
 	}
 
 	/* Browse through the free_block list */
-	while (current_free->size < size + sizeof(busy_block_s) && current_free != NULL) {
+	while (current_free != NULL && current_free->size < size + sizeof(busy_block_s)) {
 		previous = current_free;
 		current_free = current_free->next;
 	}
@@ -427,31 +427,58 @@ void *realloc(void *ptr, size_t size){
 
 
 #ifdef MAIN
+
+int leaking = 1;
+
+void leaking_fun(int n) {
+	void *a,*b,*c;
+	if(n<0)
+		return;
+	a = malloc(5);
+	b = malloc(10);
+	leaking_fun(n-1);
+	free(a);
+	c = malloc(5);
+	leaking_fun(n-2);
+	free(c);
+	if(!leaking || (n%2)==0)
+		free(b);
+}
+
+
 int main(int argc, char **argv){
 
 	/* The main can be changed, it is *not* involved in tests */
-	memory_init();
-	print_info(); 
-	print_free_blocks();
-	int i ; 
-	for( i = 0; i < 10; i++){
-		char *b = memory_alloc(rand()%8);
-		memory_free(b); 
-		print_free_blocks();
-	}
+/* 	memory_init();
+ * 	print_info(); 
+ * 	print_free_blocks();
+ * 	int i ; 
+ * 	for( i = 0; i < 10; i++){
+ * 		char *b = memory_alloc(rand()%8);
+ * 		memory_free(b); 
+ * 		print_free_blocks();
+ * 	}
+ * 
+ * 
+ * 
+ * 
+ * 	char * a = memory_alloc(15);
+ * 	a=realloc(a, 20); 
+ * 	memory_free(a);
+ * 
+ * 
+ * 	a = memory_alloc(10);
+ * 	memory_free(a);
+ * 
+ * 	printf("%lu\n",(long unsigned int) (memory_alloc(9)));
+ * 	return EXIT_SUCCESS;
+ */
 
-
-
-
-	char * a = memory_alloc(15);
-	a=realloc(a, 20); 
-	memory_free(a);
-
-
-	a = memory_alloc(10);
-	memory_free(a);
-
-	printf("%lu\n",(long unsigned int) (memory_alloc(9)));
-	return EXIT_SUCCESS;
+	if(argc>1) 
+		leaking = 0;
+	else 
+		leaking = 1;
+	leaking_fun(6);
+	return 0;
 }
 #endif 
