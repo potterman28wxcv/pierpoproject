@@ -3,10 +3,9 @@
 #include <assert.h>
 #include <string.h>
 
-//#define BEST_FIT
 /* #define DEBUG */
 /* #define __CHECK_END__ */
-#define WORST_FIT
+#define FIRST_FIT
 
 /* memory */
 char memory[MEMORY_SIZE]; 
@@ -294,7 +293,7 @@ void memory_free(char *p){
 	free_block_t cur = first_free;
 	free_block_t prev = first_free;
 	busy_block_t cur_busy;
-	busy_block_t to_be_freed = (char *) (p - sizeof(busy_block_s));
+	busy_block_t to_be_freed = (busy_block_t) ((char *) (p - sizeof(busy_block_s)));
 	
 	print_free_info(p);
 
