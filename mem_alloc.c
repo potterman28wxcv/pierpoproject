@@ -177,13 +177,14 @@ char *memory_alloc(int size){
 
 	/* Browse through the free_block list */
 	while (current_free != NULL) {
-		printf("Go into first while\n");
 		previous = current_free;
-		if (current_free->size < size + sizeof(busy_block_s)) {
-			printf("Go into second if\n");
+#ifdef DEBUG
+		printf("current_free->size : %i\n",current_free->size);
+		printf("size : %i\nsizeof(busy_block_s) : %i\n",size,sizeof(busy_block_s));
+#endif
+		if (current_free->size > size + sizeof(busy_block_s)) {
 			/* Not sure about the condition */
 			if (min_remaining_size == -1 || (size + sizeof(busy_block_s) - current_free->size < min_remaining_size)) {
-				printf("Go into last if\n");
 				best_block = current_free;
 				min_remaining_size = size + sizeof(busy_block_s) - current_free->size;
 				best_previous = previous;
@@ -191,7 +192,9 @@ char *memory_alloc(int size){
 		}
 		current_free = current_free->next;
 	}
+#ifdef DEBUG
 	printf("Remaining size : %i\n",min_remaining_size);
+#endif
 	
 
 	/* If we went through the whole list and didn't find a match, then the memory is full */
