@@ -6,7 +6,7 @@
 //#define BEST_FIT
 /* #define DEBUG */
 /* #define __CHECK_END__ */
-#define FIRST_FIT
+#define BEST_FIT
 
 /* memory */
 char memory[MEMORY_SIZE]; 
@@ -79,10 +79,6 @@ char *memory_alloc(int size){
 	current_free = first_free;
 	previous = first_free;
 
-#ifdef DEBUG
-	printf("\nStarting to allocate %i bytes\n", size);
-#endif
-
 	if (first_free == NULL) {
 		printf("first_free does not exist.\n");
 		exit(EXIT_FAILURE);
@@ -111,43 +107,19 @@ char *memory_alloc(int size){
 	new_free_s.next = current_free->next;
 	memcpy(new_free, &new_free_s, sizeof(free_block_s));
 
-#ifdef DEBUG
-	printf("We're allocating in a free block of size %i\n", current_free->size);
-#endif
-#ifdef DEBUG
-	printf("The next free block should be ");
-#endif
-#ifdef DEBUG
-	if (current_free->next != NULL) {
-		printf("%x\n", (char *)current_free->next - memory);
-		printf("current_free->next : %x\n",current_free->next);
-	} else
-		printf("NULL\n");
-#endif
-
 	/* Now we have to replace the old free block by a busy one */
 	current_free->size = size + sizeof(busy_block_s);
 
 	/* previous -> new_free */
 	/* Works even if we are on first_free */
 	if (previous == first_free) {
-#ifdef DEBUG
-		printf("First_free = new_free\n");
-#endif
 		first_free = new_free;
 	} else {
-#ifdef DEBUG
-		printf("Previous->next = new_free\n");
-#endif
 		previous->next = new_free;
 	}
 
  	print_alloc_info((char*) current_free + sizeof(busy_block_s), current_free->size - sizeof(busy_block_s)); 
 
-#ifdef DEBUG
-	printf("Allocating finished at %i\n", ((char*) current_free) + sizeof(busy_block_s) - memory);
-	printf("Now the first_free is %i\n", (char*)first_free - memory);
-#endif
 	return ((char*) current_free) + sizeof(busy_block_s);
 }
 #endif
@@ -188,10 +160,6 @@ char *memory_alloc(int size){
 		}
 		current_free = current_free->next;
 	}
-#ifdef DEBUG
-	printf("Remaining size : %i\n",min_remaining_size);
-#endif
-	
 
 	/* If we went through the whole list and didn't find a match, then the memory is full */
 	if (min_remaining_size == -1) {
@@ -250,10 +218,6 @@ void memory_free(char *p){
 	busy_block_t to_be_freed = (char *) (p - sizeof(busy_block_s));
 	
 	print_free_info(p);
-#ifdef DEBUG
-	printf("\nStart of memory_free\n");
-	printf("Block to be freed : size %i\n", to_be_freed->size);
-#endif
 
 	/* Determining if the to_be_freed block is busy */
 	cur = first_free;
@@ -355,9 +319,6 @@ void memory_free(char *p){
                 first_free = (free_block_t) to_be_freed;
         else
                 cur->next = (free_block_t) to_be_freed;
-#ifdef DEBUG
-	printf("End of memory_free !\n");
-#endif
 }
 
 void print_info(void) {
