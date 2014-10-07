@@ -3,12 +3,10 @@
 #include <assert.h>
 #include <string.h>
 
-/*#define BEST_FIT */
-
+/* #define BEST_FIT */
 /* #define DEBUG */
-/* #define __CHECK_FREE__ */
 /* #define __CHECK_END__ */
-/* #define FIRST_FIT */
+#define FIRST_FIT
 
 /* memory */
 char memory[MEMORY_SIZE]; 
