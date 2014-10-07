@@ -1,0 +1,57 @@
+/* CONVENTIONS */
+-> size :
+|   In each size, we count the size of the entire block 
+|   (so header + usable size)
+
+-> adresses :
+|   In the case of pointer to free blocks, we consider the beginning
+|   of the block.
+|
+|   But, for the user interface, we return the adress that is directly usable.
+|   (and not the one of the header)
+
+-> structures :
+|   A header of free block contains a size, and a pointer to the next one
+|   A header of busy block contains just a size
+
+/* FREEING */
+4 cases :
+-> No free block neighbour : 
+|   If the size of the block isn't big enough to
+|   create a free block, we merge this one to the previous busy block.
+|
+|   The pro is that we're not losing any memory that would become unusable.
+|
+|   And in this case, as we have no way to tell when the user tries to 
+|   read/write in an non allocated space, it's not causing any problem.
+|
+|   But, if we had a such system, then it wouldn't be wise to do it (because
+|   then that would mean we would allow in some particular cases the user to
+|   write in "extra" memory that is not allocated to him).
+
+-> A left neighbour, or a right neighbour :
+|   We merge the new free block to its neighbour
+
+-> Both left and right neighbour :
+|   We merge the new free block AND the right neighbour to the left neighbour
+
+/* ALLOWING */
+We allocate a block if there exists a free block such that the size is big
+enough to contain a busy block + the requested size.
+
+/* EXTRA CHECKING */
+-> Checking at the end :
+|   We implemented a function called at the end of the program, who tells
+|   if some blocks haven't been freed. This is activated by defining the
+|   preprocessor variable __END_CHECK__
+
+-> Checking at each free :
+|   For each free, we check if the adress given to the function is correct
+|   aka it must be the beginning of the usable part of a busy block
+
+-> Best fit and Worst fit :
+|   Implemented, it should be working, but impossible to verify with the
+|   tests provided (these can't fit to more than one strategy whenever
+|   there are free instructions in them, because the adress to be freed has
+|   to be written in the free instruction in the .in file ; and the adress to
+|   be freed vary depending on what fit you choose..)
