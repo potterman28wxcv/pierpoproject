@@ -5,7 +5,7 @@ PEDANTIC_PARANOID_FREAK =       -g -O0 -Wall -Wshadow -Wcast-align \
 				-Wpointer-arith -Wwrite-strings -finline-functions -Werror
 REASONABLY_CAREFUL_DUDE =	-Wall 
 NO_PRAYER_FOR_THE_WICKED =	-w
-WARNINGS = 			$(REASONABLY_CAREFUL_DUDE)
+WARNINGS = 			$(PEDANTIC_PARANOID_FREAK)
 
 CFLAGS = -g -O2 $(WARNINGS)
 LDFLAGS= 
