@@ -11,5 +11,8 @@ int main(void)
 	memory_free(b);
 	memory_free(b);
 
+	/* To avoid the -Werror */
+	if (a){}
+
 	return 0;
 }
