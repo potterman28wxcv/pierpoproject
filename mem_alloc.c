@@ -4,6 +4,9 @@
 #include <string.h>
 
 // #define __CHECK_END__
+// #define FIRST_FIT
+// #define BEST_FIT
+// #define WORST_FIT
 
 /* memory */
 char memory[MEMORY_SIZE]; 
@@ -104,7 +107,6 @@ char *memory_alloc(int size){
 	while (current_free != NULL) {
 		previous = current_free;
 		if (current_free->size > size + sizeof(busy_block_s)) {
-			/* Not sure about the condition */
 			if (min_remaining_size == -1 || (current_free->size - size - sizeof(busy_block_s) < min_remaining_size)) {
 				best_block = current_free;
 				min_remaining_size = current_free->size - size - sizeof(busy_block_s) ;
@@ -127,7 +129,6 @@ char *memory_alloc(int size){
 	while (current_free != NULL) {
 		previous = current_free;
 		if (current_free->size > size + sizeof(busy_block_s)) {
-			/* Not sure about the condition */
 			if (max_remaining_size == -1 || (current_free->size - size - sizeof(busy_block_s) > max_remaining_size)) {
 				best_block = current_free;
 				max_remaining_size = current_free->size - size - sizeof(busy_block_s) ;
