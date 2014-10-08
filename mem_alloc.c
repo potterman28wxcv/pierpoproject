@@ -5,9 +5,9 @@
 
 // #define __CHECK_END__
 // #define FIRST_FIT
-// #define BEST_FIT
+#define BEST_FIT
 // #define WORST_FIT
-// #define LEAK_TEST
+#define LEAK_TEST
 
 /* memory */
 char memory[MEMORY_SIZE]; 
@@ -95,6 +95,7 @@ char *memory_alloc(int size){
 
 #if !defined(BEST_FIT) && !defined(WORST_FIT)
 	/* ***** FIRST FIT ***** */
+
 	/* Browse through the free_block list */
 	while (current_free != NULL && current_free->size < size + sizeof(busy_block_s)) {
 		previous = current_free;
@@ -106,6 +107,8 @@ char *memory_alloc(int size){
 		printf("Not enough memory space.\n");
 		exit(EXIT_FAILURE);
 	}
+
+	/***************/
 #elif defined(BEST_FIT)
 	/* ***** BEST FIT ***** */
 
@@ -174,7 +177,6 @@ char *memory_alloc(int size){
 	current_free->size = size + sizeof(busy_block_s);
 
 	/* previous -> new_free */
-	/* Works even if we are on first_free */
 	if (previous == first_free) {
 		first_free = new_free;
 	} else {
@@ -232,9 +234,9 @@ void memory_free(char *p){
 	}
 	if (!(cursor == (char *) to_be_freed && cursor != (char *) cur)){
 		if (cursor != (char *) to_be_freed)
-			fprintf(stderr, "You're trying to free an invalid adress\n");
+			fprintf(stderr, "You're trying to free an invalid address\n");
 		else if (cursor == (char *) cur)
-			fprintf(stderr, "The adress is already freed !\n");
+			fprintf(stderr, "The address is already freed !\n");
 		exit(EXIT_FAILURE);
 	}
 		
