@@ -7,7 +7,7 @@
 // #define FIRST_FIT
 // #define BEST_FIT
 // #define WORST_FIT
-#define LEAK_TEST
+// #define LEAK_TEST
 
 /* memory */
 char memory[MEMORY_SIZE]; 
