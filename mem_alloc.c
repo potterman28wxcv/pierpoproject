@@ -93,9 +93,11 @@ char *memory_alloc(int size){
 		printf("first_free does not exist.\n");
 		exit(EXIT_FAILURE);
 	}
+
 	/***************/
 
 #if !defined(BEST_FIT) && !defined(WORST_FIT)
+
 	/* ***** FIRST FIT ***** */
 
 	/* Browse through the free_block list */
@@ -111,7 +113,9 @@ char *memory_alloc(int size){
 	}
 
 	/***************/
+
 #elif defined(BEST_FIT)
+
 	/* ***** BEST FIT ***** */
 
 	/* Browse through the free_block list */
@@ -137,7 +141,9 @@ char *memory_alloc(int size){
 	previous = best_previous;
 
 	/* ******************* */
+
 #elif defined(WORST_FIT)
+
 	/* ***** WORST FIT ***** */
 
 	/* Browse through the free_block list */
@@ -163,6 +169,7 @@ char *memory_alloc(int size){
 	previous = best_previous;
 
 	/* ******************* */
+
 #endif
 
 	/* We now allocate the block */
@@ -198,13 +205,14 @@ char *memory_alloc(int size){
 
 
 
+/*******************************************************************************/
+/*******************************************************************************/
+/*******************************************************************************/
 
 
 
 
-
-
-/************************ MEMORY FREE **********************/
+/******************************* MEMORY FREE ************************************/
 
 /**
  * Merge the block to the left free neighbour, 
