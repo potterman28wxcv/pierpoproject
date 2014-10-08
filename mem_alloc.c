@@ -4,7 +4,6 @@
 #include <string.h>
 
 // #define __CHECK_END__
-#define WORST_FIT
 
 /* memory */
 char memory[MEMORY_SIZE]; 
@@ -69,8 +68,7 @@ char *memory_alloc(int size){
 	int min_remaining_size = -1;
 	free_block_t best_block = NULL;
 	free_block_t best_previous = NULL;
-#endif
-#ifdef WORST_FIT
+#elif defined(WORST_FIT)
 	int max_remaining_size = -1;
 	free_block_t best_block = NULL;
 	free_block_t best_previous = NULL;
@@ -89,7 +87,7 @@ char *memory_alloc(int size){
 		exit(EXIT_FAILURE);
 	}
 
-#ifdef FIRST_FIT
+#if !defined(BEST_FIT) && !defined(WORST_FIT)
 	/* Browse through the free_block list */
 	while (current_free != NULL && current_free->size < size + sizeof(busy_block_s)) {
 		previous = current_free;
@@ -101,8 +99,7 @@ char *memory_alloc(int size){
 		printf("Not enough memory space.\n");
 		exit(EXIT_FAILURE);
 	}
-#endif
-#ifdef BEST_FIT
+#elif defined(BEST_FIT)
 	/* Browse through the free_block list */
 	while (current_free != NULL) {
 		previous = current_free;
@@ -125,8 +122,7 @@ char *memory_alloc(int size){
 
 	current_free = best_block;
 	previous = best_previous;
-#endif
-#ifdef WORST_FIT
+#elif defined(WORST_FIT)
 	/* Browse through the free_block list */
 	while (current_free != NULL) {
 		previous = current_free;
