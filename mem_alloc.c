@@ -74,8 +74,8 @@ char *memory_alloc(int size){
 	free_block_t best_previous = NULL;
 #elif defined(WORST_FIT)
 	int max_remaining_size = -1;
-	free_block_t best_block = NULL;
-	free_block_t best_previous = NULL;
+	free_block_t worst_block = NULL;
+	free_block_t worst_previous = NULL;
 #endif
 
 	/* Common part */
@@ -133,7 +133,7 @@ char *memory_alloc(int size){
 
 	/* If we went through the whole list and didn't find a match, then the memory is full */
 	if (min_remaining_size == -1) {
-		printf("Not enough memory space.\n");
+		fprintf(stderr,"Not enough memory space.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -151,9 +151,9 @@ char *memory_alloc(int size){
 		previous = current_free;
 		if (current_free->size > size + sizeof(busy_block_s)) {
 			if (max_remaining_size == -1 || (current_free->size - size - sizeof(busy_block_s) > max_remaining_size)) {
-				best_block = current_free;
+				worst_block = current_free;
 				max_remaining_size = current_free->size - size - sizeof(busy_block_s) ;
-				best_previous = previous;
+				worst_previous = previous;
 			}
 		}
 		current_free = current_free->next;
@@ -161,12 +161,12 @@ char *memory_alloc(int size){
 
 	/* If we went through the whole list and didn't find a match, then the memory is full */
 	if (max_remaining_size == -1) {
-		printf("Not enough memory space.\n");
+		fprintf(stderr,"Not enough memory space.\n");
 		exit(EXIT_FAILURE);
 	}
 
-	current_free = best_block;
-	previous = best_previous;
+	current_free = worst_block;
+	previous = worst_previous;
 
 	/* ******************* */
 
