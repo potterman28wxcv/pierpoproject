@@ -115,7 +115,7 @@ anything at all, we merge the busy block to the left neighbour busy block.
 \begin{itemize}
 	\item The pro : it solves our problem !
 	\item The con : the user can use this extra memory without knowing it. For 
-		example he could declare an array of 20 elements, go to the 21 elements,
+		example he could declare an array of 20 elements, go to the 21st element,
 		and the program wouldn't crash, while it would do unexpected behaviour.
 \end{itemize}
 
@@ -123,8 +123,8 @@ Here, as we don't have any checking occuring when trying to access memory,
 this is not a problem. But it would be a problem in a more consequent OS 
 project.\\
 
-Recently, we solved the problem by forcing the allocation of a minimum size
-so in any case there is enough place to write the free block header, so the
+Later on, we finally solved the problem by forcing the allocation of a minimum size
+so that in any case there is enough place to write the free block header. The
 implementation of this particular case shouldn't be used anymore (but we left it
 just in case).
 
@@ -162,5 +162,14 @@ We allocate a block if there exists a free block such that the size is big
 enough to contain a free block header + the requested size.\\
 
 If it's not the case, then we allow enough space to contain the free block
-header.
+header. This method solves the issue that we have when we free a tiny busy block
+between two other busy blocks (the freed busy block cannot contain the free block
+header). The downside of the method is that we lose memory space at every little allocation.
+
+\subsection{About the leak test}
+We couldn't get the leak test to work with the |Makefile|. We had no output \ldots
+While debugging, we noticed that the program didn't do anything. It simply
+ignored the lines with |malloc| and |free|.
+We had to add a macro in |mem_alloc.c| that will allow us to execute the
+|leak_test.c| code directly in the main of |mem_alloc.c|.
 \end{document}
