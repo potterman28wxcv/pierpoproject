@@ -9,5 +9,8 @@ int main(void)
 	b = (long *) memory_alloc(sizeof(long));
 	memory_free((char *) a);
 
+	/* To avoid the -Werror issue */
+	if (b){}
+
 	return 0;
 }
