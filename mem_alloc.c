@@ -186,11 +186,14 @@ char *memory_alloc(int size){
 	new_free_s.size = current_free->size - allocated_memory_size;
 	/* Write the new next position in the structure */
 	new_free_s.next = current_free->next;
+	
+	/* Write the structure in memory */
 	memcpy(new_free, &new_free_s, sizeof(free_block_s));
 
 	/* Now we have to replace the old free block by a busy one */
 	current_free->size = allocated_memory_size;
 
+	/* We complete the linked chain of free blocks */
 	/* previous -> new_free */
 	if (previous == first_free) {
 		first_free = new_free;
