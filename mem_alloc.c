@@ -124,6 +124,7 @@ char *memory_alloc(int size){
 	}
 
 	current_free = best_block;
+	previous = best_previous;
 #endif
 #ifdef WORST_FIT
 	/* Browse through the free_block list */
@@ -145,6 +146,9 @@ char *memory_alloc(int size){
 		printf("Not enough memory space.\n");
 		exit(EXIT_FAILURE);
 	}
+
+	current_free = best_block;
+	previous = best_previous;
 #endif
 
 	/* We now allocate the block */
