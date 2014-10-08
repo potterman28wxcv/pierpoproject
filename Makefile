@@ -1,4 +1,4 @@
-CC=colorgcc
+CC=gcc
 PEDANTIC_PARANOID_FREAK =       -g -O0 -Wall -Wshadow -Wcast-align \
 				-Waggregate-return -Wstrict-prototypes \
 				-Wredundant-decls -Wnested-externs \
