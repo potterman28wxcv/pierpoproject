@@ -238,6 +238,8 @@ void memory_free(char *p){
 			/* cursor is on a busy block */
 			cur_busy = (busy_block_t) cursor;
 			cursor += cur_busy->size;
+			if (cur_busy->size == 0)
+				break;
 		}
 	}
 	if (!(cursor == (char *) to_be_freed && cursor != (char *) cur)){
