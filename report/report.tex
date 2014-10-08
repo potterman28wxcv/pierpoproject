@@ -55,7 +55,7 @@ Two more rules have been added :
 
 \section{The answers to the questions}
 \subsection{Question III.1}
-Knowing the list of free block, and having the size stored in each block,
+Knowing the list of free blocks, and having the size stored in each block,
 we have precise knowledge of where are the busy block.\\
 
 Indeed : if the block isn't stored in the free block list, then it's a busy
@@ -121,7 +121,12 @@ anything at all, we merge the busy block to the left neighbour busy block.
 
 Here, as we don't have any checking occuring when trying to access memory,
 this is not a problem. But it would be a problem in a more consequent OS 
-project.
+project.\\
+
+Recently, we solved the problem by forcing the allocation of a minimum size
+so in any case there is enough place to write the free block header, so the
+implementation of this particular case shouldn't be used anymore (but we left it
+just in case).
 
 \section{Other decisions and conventions adopted}
 \subsection{Conventions}
@@ -154,11 +159,8 @@ We distinguish 4 cases :
 
 \subsection{Allocating behaviour}
 We allocate a block if there exists a free block such that the size is big
-enough to contain a busy block header + the requested size.\\
+enough to contain a free block header + the requested size.\\
 
-But we also have a variant of this rule : we allow it if the size is big enough
-to contain a free block header + the requested size. If this is not the case,
-instead of allowing the request size, we allow just enough for the free block
-header to be written.
-
+If it's not the case, then we allow enough space to contain the free block
+header.
 \end{document}
