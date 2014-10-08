@@ -5,7 +5,7 @@
 
 // #define __CHECK_END__
 // #define FIRST_FIT
-#define BEST_FIT
+// #define BEST_FIT
 // #define WORST_FIT
 #define LEAK_TEST
 
@@ -83,6 +83,8 @@ char *memory_alloc(int size){
 	free_block_t previous;
 	free_block_t new_free;
 	free_block_s new_free_s;
+
+	int allocated_memory_size;
 
 	current_free = first_free;
 	previous = first_free;
@@ -164,17 +166,23 @@ char *memory_alloc(int size){
 #endif
 
 	/* We now allocate the block */
+	/* If it is too small to be a free_block in the future,
+	 * we force it to be at least of this size */
+	if (size + sizeof(busy_block_s) < sizeof(free_block_s))
+		allocated_memory_size = sizeof(free_block_s);
+	else
+		allocated_memory_size = size + sizeof(busy_block_s);
 
 	/* New pointer to the beginning of the new free block */
-	new_free = (free_block_s*) (((char*)current_free) + size + sizeof(busy_block_s));
+	new_free = (free_block_s*) (((char*)current_free) + allocated_memory_size);
 	/* Write the new size left in the structure */
-	new_free_s.size = current_free->size - size - sizeof(busy_block_s);
+	new_free_s.size = current_free->size - allocated_memory_size;
 	/* Write the new next position in the structure */
 	new_free_s.next = current_free->next;
 	memcpy(new_free, &new_free_s, sizeof(free_block_s));
 
 	/* Now we have to replace the old free block by a busy one */
-	current_free->size = size + sizeof(busy_block_s);
+	current_free->size = allocated_memory_size;
 
 	/* previous -> new_free */
 	if (previous == first_free) {
