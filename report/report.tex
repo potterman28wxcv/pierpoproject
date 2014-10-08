@@ -1,15 +1,14 @@
 \documentclass[twoside]{article}
-\pagestyle{empty}
 \oddsidemargin -0.5 cm
 \evensidemargin -0.5 cm
 \textwidth 17 cm
-\topmargin -3 cm
-\textheight 26.5 cm
+\topmargin -1.5 cm
+\textheight 24.5 cm
 \usepackage{shortvrb}
 \MakeShortVerb{\|}
 
 \author{POUPIN Pierre, SIX Cyril}
-\title{Implementation of an allocator}
+\title{\textbf{Implementation of an allocator}}
 
 \begin{document}
 \maketitle
@@ -40,9 +39,9 @@ Each macro refers to a version or particularity of the program. It is activated
 with a |#define MACRO|.
 \begin{itemize}
 	\item |BEST_FIT|, |WORST_FIT| : activating one of them will replace the
-		|first fit| strategy with the |best fit| or |worst fit|.
+		|first fit| strategy with the |best fit| or | worst fit|.
 	\item |CHECK_END| : this implements the checking at the end of the program.
-		It's desactivated by default, to ensure the tests alloc.in give the 
+		It's deactivated by default, to ensure the tests alloc.in give the 
 		expected output.
 \end{itemize}
 
@@ -74,22 +73,22 @@ In |mem_alloc.c|, we use this technique to know if the free request of a user
 is correct.
 
 \subsection{Question III.2}
-As a user, we cannot use adresses that haven't been allocated first. Indeed,
+As a user, we cannot use addresses that haven't been allocated first. Indeed,
 the allocator has to store headers in each allocated block ; if the user were
 able to write wherever he wants, it would then screw up the allocator, which
 would lead to weird behaviours (seg fault, infinite loop..).\\
 
-So it's more secured to forbide the user to do it.
+So it's more secured to forbid the user to do it.
 
 \subsection{Question III.3}
-Therefore, when a block is allocated, we should return the adress that is
+Therefore, when a block is allocated, we should return the address that is
 actually usable by the user. For example, if the user allocates 20 bytes, then
 the allocator turn a 24 bytes block into a busy block, and it returns the
-adress of the 5th bytes (assuming the header is 4 bytes long).
+address of the 5th bytes (assuming the header is 4 bytes long).
 
 \subsection{Question III.4}
-So the user always use the adress of the usable content, not the adress of
-the header. As a consequence, the free function will always have the adress
+So the user always use the address of the usable content, not the address of
+the header. As a consequence, the free function will always have the address
 of usable content as argument ; the first step is then to jump back of 4
 bytes for example if the header is 4 bytes.\\
 
@@ -129,7 +128,7 @@ project.
 \begin{description}
 	\item[size :] We store the size of the entire block (so header + usable 
 		size)
-	\item[adresses :] We consider the adress of the beginning of the block
+	\item[addresses :] We consider the address of the beginning of the block
 		(header included). But, for the user interface, we return the address
 		that is directly usable.
 	\item[structures :] We left it as it was. So the free block structure has
