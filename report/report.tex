@@ -84,7 +84,7 @@ So it's more secured to forbid the user to do it.
 Therefore, when a block is allocated, we should return the address that is
 actually usable by the user. For example, if the user allocates 20 bytes, then
 the allocator turn a 24 bytes block into a busy block, and it returns the
-address of the 5th bytes (assuming the header is 4 bytes long).
+address of the 5th byte (assuming the header is 4 bytes long).
 
 \subsection{Question III.4}
 So the user always use the address of the usable content, not the address of
