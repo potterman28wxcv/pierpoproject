@@ -7,6 +7,7 @@
 // #define FIRST_FIT
 // #define BEST_FIT
 // #define WORST_FIT
+// #define LEAK_TEST
 
 /* memory */
 char memory[MEMORY_SIZE]; 
@@ -77,6 +78,7 @@ char *memory_alloc(int size){
 	free_block_t best_previous = NULL;
 #endif
 
+	/* Common part */
 	free_block_t current_free;
 	free_block_t previous;
 	free_block_t new_free;
@@ -89,8 +91,10 @@ char *memory_alloc(int size){
 		printf("first_free does not exist.\n");
 		exit(EXIT_FAILURE);
 	}
+	/***************/
 
 #if !defined(BEST_FIT) && !defined(WORST_FIT)
+	/* ***** FIRST FIT ***** */
 	/* Browse through the free_block list */
 	while (current_free != NULL && current_free->size < size + sizeof(busy_block_s)) {
 		previous = current_free;
@@ -103,6 +107,8 @@ char *memory_alloc(int size){
 		exit(EXIT_FAILURE);
 	}
 #elif defined(BEST_FIT)
+	/* ***** BEST FIT ***** */
+
 	/* Browse through the free_block list */
 	while (current_free != NULL) {
 		previous = current_free;
@@ -124,7 +130,11 @@ char *memory_alloc(int size){
 
 	current_free = best_block;
 	previous = best_previous;
+
+	/* ******************* */
 #elif defined(WORST_FIT)
+	/* ***** WORST FIT ***** */
+
 	/* Browse through the free_block list */
 	while (current_free != NULL) {
 		previous = current_free;
@@ -146,6 +156,8 @@ char *memory_alloc(int size){
 
 	current_free = best_block;
 	previous = best_previous;
+
+	/* ******************* */
 #endif
 
 	/* We now allocate the block */
@@ -403,6 +415,7 @@ void *realloc(void *ptr, size_t size){
 
 #ifdef MAIN
 
+#ifdef LEAK_TEST
 int leaking = 1;
 
 void leaking_fun(int n) {
@@ -419,12 +432,20 @@ void leaking_fun(int n) {
 	if(!leaking || (n%2)==0)
 		free(b);
 }
+#endif
 
 
 int main(int argc, char **argv){
 
-	/* The main can be changed, it is *not* involved in tests */
-	/*memory_init();
+#ifdef LEAK_TEST
+	if(argc>1) 
+		leaking = 0;
+	else 
+		leaking = 1;
+	leaking_fun(6);
+	return 0;
+#else
+	memory_init();
 	print_info(); 
 	print_free_blocks();
 	int i ; 
@@ -446,15 +467,8 @@ int main(int argc, char **argv){
 	memory_free(a);
 
 	printf("%lu\n",(long unsigned int) (memory_alloc(9)));
-	return EXIT_SUCCESS;*/
-
-
-	if(argc>1) 
-		leaking = 0;
-	else 
-		leaking = 1;
-	leaking_fun(6);
-	return 0;
+	return EXIT_SUCCESS;
+#endif
 
 }
 #endif 
